@@ -1,8 +1,11 @@
-Kotlin Utils
+Kotlin AutoClose
 ============
 
-This is a fun project of mine to play around with some Kotlin ideas that may be useful. Currently it only has a resource management utility.
-I can't think of anything else to add to it, so this probably isn't going to grow very much.
+The project is forked from Kyle Wood's (DemonWav) [kotlin-utils](https://discuss.kotlinlang.org/t/kotlin-needs-try-with-resources/214).
+
+While it is a clean room implementation, project structure, UnitTest and even the readme.md are simply adapted from Kyle's work.
+
+Thanks Kyle!
 
 `using {}`
 ----------
@@ -16,33 +19,41 @@ Kotlin's response is with the `AutoCloseable#use()` extension method. This is fi
 3. No support for catching exceptions. In Java with `try-with-resources` you can catch exceptions thrown in the resource initialization in
    the same try block. In Kotlin, you have to wrap the `use()` block in another `try-catch` block.
 
-The only good solution for this is for the Kotlin language itself to be expanded to support proper `try-with-resources`. The team is against
-this for some reason, not wanting to add language features for something like this, opting instead to use existing language features to
-accomplish this. So this util project attempts to do just that, but unless someone smarter than me can come up with a solution to the two
-things this is missing, it seems to me like extending the Kotlin language itself really is the best route to go for this.
+There is an approach by Kyle Wood (DemonWav) which approaches all of these issues with Kotlin extension functions:
+https://github.com/DemonWav/kotlin-utils
 
-This util was extended off the ideas presented in [this discussion](https://discuss.kotlinlang.org/t/kotlin-needs-try-with-resources/214).
+s2s-KotlinAutoClose was developed without knowledge of Kyle's project. But after proposing my approach in Kotlin Slack, Kotlin Utils was pointed out to me and I onboarded myself onto [this discussion](https://discuss.kotlinlang.org/t/kotlin-needs-try-with-resources/214) around it:.
 
-Here's an example usage of this util, and after that I'll show the Java equivalent (slightly cleaned up after decompiling) so you can get an
-idea of the performance cost of this, and then I'll go over the real downsides.
+I realized, that my solution is a lot more standard and less complex.
+It uses Kotlin's regular try/catch mechanisms and therefore does not require a final `finally` (see kotlin-utils [readme.md](https://github.com/DemonWav/kotlin-utils/blob/master/readme.md))
+
+On the other hand it does not solve issue #3. You still need a separate try/catch around your using block if you want to handle exceptions!
+
+It basically follows closely Orangy's [suggestion](https://discuss.kotlinlang.org/t/kotlin-needs-try-with-resources/214/2).
+
+Here's an example usage of autoClose.
 
 ```kotlin
 class Example {
     fun example() {
-        using {
-            val connection = getConnect().autoClose()
-            val statement = connection.prepareStatement("SELECT ?").autoClose()
-            // This means you can add resources to the manager at any time, which is a bonus
-            statement.setInt(1, 1)
-            val rs = statement.executeQuery().autoClose()
-            
-            // Do database stuff
-        } catch { e: IOException ->
+        try {
+            using {
+                val connection = DriverManager.getConnection("MyDriver").autoClose()
+                val statement = connection.prepareStatement("SELECT ?").autoClose()
+                // This means you can add resources to the manager at any time, which is a bonus
+                statement.setInt(1, 1)
+                val rs = statement.executeQuery().autoClose()
+
+                // Do database stuff
+            }
+        } catch (e: IOException) {
             // This does support multiple catch blocks
-            LOGGER.error("IO error", e)
-        } catch { e: SQLException ->
-            LOGGER.error("Error in query", e)
-        } finally {} // this is necessary, even when empty, as the logic for throwing un-caught exceptions is placed here
+            println("IO error" + e)
+        } catch (e: SQLException) {
+            println("Error in query" + e)
+        } finally {
+            // Not required
+        }
     }
 }
 ```
@@ -51,129 +62,64 @@ And the Java equivalent of the bytecode this generates:
 
 ```java
 public final class Example {
-    public final void example() {
-        ResourceManager manager = new ResourceManager();
-        
-        Throwable var3;
-        try {
-            AutoCloseable var2 = (AutoCloseable) manager;
-            var3 = (Throwable) null;
-            
+   public final void example() {
+      try {
+         String var2;
+         try {
+            RessourceManager manager$iv = new RessourceManager();
+            boolean closed$iv = false;
+            boolean var19 = false;
+
             try {
-                ResourceManager recevier = (ResourceManager) var2;
-                Connection connection = (Connection) receiver.autoClose((AutoCloseable) this.getConnection());
-                PreparedStatement statement = (PreparedStatment) receiver.autoClose((AutoCloseable) connection.prepareStatement("SELECT 1"));
-                ResultSet rs = (ResultSet) receiver.autoClose((AutoCloseable) statement.executeQuery());
-                Unit var31 = Unit.INSTANCE; // wtf kotlin?
-            } catch (Throwable t) {
-                var3 = t;
-                throw t;
+               var19 = true;
+               Connection connection = (Connection)manager$iv.autoClose((AutoCloseable)DriverManager.getConnection("MyDriver"));
+               PreparedStatement statement = (PreparedStatement)manager$iv.autoClose((AutoCloseable)connection.prepareStatement("SELECT ?"));
+               statement.setInt(1, 1);
+               ResultSet var10000 = (ResultSet)manager$iv.autoClose((AutoCloseable)statement.executeQuery());
+               Unit var3 = Unit.INSTANCE;
+               var19 = false;
+            } catch (Throwable var20) {
+               closed$iv = true;
+               manager$iv.closeAndRethrow(var20);
+               throw null;
             } finally {
-                AutoCloseableKt.closeFinally(var2, var3);
+               if (var19) {
+                  if (!closed$iv) {
+                     manager$iv.close();
+                  }
+
+               }
             }
-        } catch (Throwable t) {
-            manager.setT(t);
-        }
-        
-        Catcher this_iv = manager.getCatcher();
-        String var45;
-        Throwable var10000;
-        if (this_iv.getT() instanceof IOException) {
-            try {
-                var10000 = this_iv.getT();
-                if (var10000 == null) {
-                    throw new TypeCastException("null cannot be cast to non-null type java.io.IOException");
-                }
-                
-                IOException e = (IOException) var10000;
-                var45 = "IO Error";
-                System.out.println(var45);
-                e.printStackTrace();
-            } catch (Throwable t) {
-                this_iv.setThrown(t);
-            } finally {
-                this_t.setT((Throwable) null);
-            }
-        }
-        
-        if (this_iv.getT() instanceof SQLException) {
-            try {
-                var10000 = this_iv.getT();
-                if (var10000 == null) {
-                    throw new TypeCastException("null cannot be cast to non-null type java.sql.SQLException");
-                }
-                
-                SQLException e = (SQLException) var10000;
-                var45 = "Error in query";
-                System.out.println(var45);
-                e.printStackTracer();
-            } catch (Throwable t) {
-                this_iv.setThrown(t);
-            } finally {
-                this_iv.setT((Throwable) null);
-            }
-        }
-        
-        // This is the empty finally {} block,
-        // I don't know of a way to make it not do this if finally {} is empty
-        // probably cant
-        try {
-        } catch (Throwable t) {
-            Throwable var32;
-            if (this_iv.getT() == null) {
-                if (this_iv.getThrown() == null) {
-                    throw vart;
-                }
-                
-                var10000 = this_iv.getThrown();
-                if (var10000 == null) {
-                    Intrinsics.throwNpe();
-                }
-                
-                var32 = var10000;
-                var32.addSuppressed(t);
-                throw var32;
-            }
-            
-            var10000 = this_iv.getT();
-            if (var10000 == null) {
-                Intrinsics.throwNpe();
-            }
-            
-            var32 = var10000;
-            var32.addSuppressed(t);
-            throw var32;
-        }
-        
-        // This is the bit of the code that is why finally {} is always required even when empty
-        var10000 = this_iv.getT();
-        if (var10000 != null) {
-            var3 = var10000;
-            var10000 = this_iv.getThrown();
-            if (var10000 == null) {
-                Throwable var33 = var10000;
-                var3.addSuppressed(var33);
-            }
-            
-            throw var3;
-        } else {
-            var10000 = this_iv.getThrown();
-            if (var10000 != null) {
-                var3 = var10000;
-                throw var3;
-            }
-        }
-    }
+
+            manager$iv.close();
+         } catch (IOException var22) {
+            var2 = "IO error" + var22;
+            System.out.println(var2);
+         } catch (SQLException var23) {
+            var2 = "Error in query" + var23;
+            System.out.println(var2);
+         }
+
+      } finally {
+         ;
+      }
+   }
 }
 
 // For reference:
-public final class ResourceManager {
+public final class RessourceManager {
+   private final ArrayList closeables;
+
+   public final AutoCloseable autoClose(AutoCloseable $receiver) {
+      if ($receiver != null) {
+         this.closeables.add($receiver);
+      }
+
+      return $receiver;
+   }
+
+
     // Other stuff omitted
-    public AutoCloseable autoClose(AutoCloseable receiver) {
-        Intrinsics.checkParameterIsNotNull(receiver, "receiver");
-        this.resourceQueue.offer(receiver);
-        return receiver;
-    }
 }
 ```
 
@@ -183,7 +129,7 @@ For reference, this is the standard Kotlin equivalent:
 class Example {
     fun example() {
         try {
-            getConnection().use { connection ->
+            DriverManager.getConnection("MyDriver").use { connection ->
                 connection.prepareStatement("SELECT ?").use { statement ->
                     statement.setInt(1, 1)
                     statement.executeQuery().use { rs ->
@@ -206,7 +152,7 @@ And this is the Java equivalent:
 public class Example {
     public void example() {
         try (
-            final Connection connection = getConnect();
+            final Connection connection = DriverManager.getConnection("MyDriver");
             final PreparedStatement statement = connection.prepareStatement("SELECT ?")
         ) {
             statement.setInt(1, 1);
@@ -222,16 +168,3 @@ public class Example {
 }
 ```
 
-So it's definitely not as efficient as the Java `try-with-resources`. However, whether this would actually effect anything in practice, I
-don't know.
-
-The real downsides that I see are this:
-
-1. There is no way, without explicitly calling a function at the end (in this case I've just re-purposed the `finally` block for this), to
-   always throw any un-caught exceptions once this is finished. In Java, if any exception makes it through the `try-with-resources` block
-   un-caught, it will automatically be thrown. In this case, the programmer still always has to add the `finally {}` part at the end to
-   mimic this behavior, which is not pretty and easy to forget.
-2. There is no way to do a single multi-catch block (Java 7+ does this with `|`). This is less of an issue as Kotlin as of yet still has no
-   native support for this either.
-
-Suggestions are welcome.
