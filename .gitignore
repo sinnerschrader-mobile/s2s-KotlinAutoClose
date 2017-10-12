@@ -208,3 +208,5 @@ nbdist/
 # Avoid ignoring Gradle wrapper jar file (.jar files are usually ignored)
 # At the end of the file to override anything else
 !gradle-wrapper.jar
+
+*.iml
