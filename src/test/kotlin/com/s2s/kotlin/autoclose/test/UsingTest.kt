@@ -521,12 +521,10 @@ class UsingTest {
     }
 
     class ResultSet : Closed() {
-        fun next() {}
+        fun next() = Unit
     }
 
     class CloseWithException : AutoCloseable {
-        override fun close() {
-            throw SuperSecretException
-        }
+        override fun close(): Unit = throw SuperSecretException
     }
 }
