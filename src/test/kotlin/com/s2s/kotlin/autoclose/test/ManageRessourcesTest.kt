@@ -18,22 +18,22 @@
 
 package com.s2s.kotlin.autoclose.test
 
-import com.s2s.kotlin.autoclose.using
+import com.s2s.kotlin.autoclose.manageRessources
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 
-@DisplayName("using {} tests")
-class UsingTest {
+@DisplayName("manageRessources {} tests")
+class ManageRessourcesTest {
     @Test
-    @DisplayName("Simple using {} test")
+    @DisplayName("Simple manageRessources {} test")
     fun testBasicUsing() {
         var connection: Connection? = null
         var statement: PreparedStatement? = null
         var rs: ResultSet? = null
 
-        using {
+        manageRessources {
             connection = getConnection().autoClose()
             statement = connection?.prepareStatement().autoClose()
             rs = statement?.executeQuery().autoClose()
@@ -53,7 +53,7 @@ class UsingTest {
         var rs: ResultSet? = null
 
         try {
-            using {
+            manageRessources {
                 connection = getConnection().autoClose()
                 statement = connection?.prepareStatement().autoClose()
                 rs = statement?.executeQuery().autoClose()
@@ -77,7 +77,7 @@ class UsingTest {
 
         assertThrows(SuperSecretException::class.java) {
             try {
-                using {
+                manageRessources {
                     connection = getConnection().autoClose()
                     statement = connection?.prepareStatement().autoClose()
                     rs = statement?.executeQuery().autoClose()
@@ -94,7 +94,7 @@ class UsingTest {
     }
 
     @Test
-    @DisplayName("Exception in using {} block test")
+    @DisplayName("Exception in manageRessources {} block test")
     fun testExceptionInBlock() {
         var connection: Connection? = null
         var statement: PreparedStatement? = null
@@ -103,7 +103,7 @@ class UsingTest {
         assertThrows(SuperSecretException::class.java) {
 
             try {
-                using {
+                manageRessources {
                     connection = getConnection().autoClose()
                     statement = connection?.prepareStatement().autoClose()
                     rs = statement?.executeQuery().autoClose()
@@ -120,14 +120,14 @@ class UsingTest {
     }
 
     @Test
-    @DisplayName("Exception in using {} block with catch test")
+    @DisplayName("Exception in manageRessources {} block with catch test")
     fun testCatch() {
         var connection: Connection? = null
         var statement: PreparedStatement? = null
         var rs: ResultSet? = null
 
         try {
-            using {
+            manageRessources {
                 connection = getConnection().autoClose()
                 statement = connection?.prepareStatement().autoClose()
                 rs = statement?.executeQuery().autoClose()
@@ -146,7 +146,7 @@ class UsingTest {
     }
 
     @Test
-    @DisplayName("Exception in using {} block with catch of different type test")
+    @DisplayName("Exception in manageRessources {} block with catch of different type test")
     fun testCatchWrongType() {
         var connection: Connection? = null
         var statement: PreparedStatement? = null
@@ -154,7 +154,7 @@ class UsingTest {
 
         assertThrows(SuperSecretException::class.java) {
             try {
-                using {
+                manageRessources {
                     connection = getConnection().autoClose()
                     statement = connection?.prepareStatement().autoClose()
                     rs = statement?.executeQuery().autoClose()
@@ -175,14 +175,14 @@ class UsingTest {
     }
 
     @Test
-    @DisplayName("Exception in using {} block with catch of super type test")
+    @DisplayName("Exception in manageRessources {} block with catch of super type test")
     fun testCatchSuperType() {
         var connection: Connection? = null
         var statement: PreparedStatement? = null
         var rs: ResultSet? = null
 
         try {
-            using {
+            manageRessources {
                 connection = getConnection().autoClose()
                 statement = connection?.prepareStatement().autoClose()
                 rs = statement?.executeQuery().autoClose()
@@ -200,14 +200,14 @@ class UsingTest {
     }
 
     @Test
-    @DisplayName("Exception in using {} block with multi-catch test")
+    @DisplayName("Exception in manageRessources {} block with multi-catch test")
     fun testMultiCatch() {
         var connection: Connection? = null
         var statement: PreparedStatement? = null
         var rs: ResultSet? = null
 
         try {
-            using {
+            manageRessources {
                 connection = getConnection().autoClose()
                 statement = connection?.prepareStatement().autoClose()
                 rs = statement?.executeQuery().autoClose()
@@ -226,14 +226,14 @@ class UsingTest {
     }
 
     @Test
-    @DisplayName("Exception in using {} block with multi-catch super type test")
+    @DisplayName("Exception in manageRessources {} block with multi-catch super type test")
     fun testMultiCatchSuper() {
         var connection: Connection? = null
         var statement: PreparedStatement? = null
         var rs: ResultSet? = null
 
         try {
-            using {
+            manageRessources {
                 connection = getConnection().autoClose()
                 statement = connection?.prepareStatement().autoClose()
                 rs = statement?.executeQuery().autoClose()
@@ -252,7 +252,7 @@ class UsingTest {
     }
 
     @Test
-    @DisplayName("Exception in using {} block with multi-catch wrong type test")
+    @DisplayName("Exception in manageRessources {} block with multi-catch wrong type test")
     fun testMultiCatchWrongType() {
         var connection: Connection? = null
         var statement: PreparedStatement? = null
@@ -260,7 +260,7 @@ class UsingTest {
 
         assertThrows(SuperSecretException::class.java) {
             try {
-                using {
+                manageRessources {
                     connection = getConnection().autoClose()
                     statement = connection?.prepareStatement().autoClose()
                     rs = statement?.executeQuery().autoClose()
@@ -288,7 +288,7 @@ class UsingTest {
 
         assertThrows(AnotherSecretException::class.java) {
             try {
-                using {
+                manageRessources {
                     connection = getConnection().autoClose()
                     statement = connection?.prepareStatement().autoClose()
                     rs = statement?.executeQuery().autoClose()
@@ -315,7 +315,7 @@ class UsingTest {
 
         assertThrows(AnotherSecretException::class.java) {
             try {
-                using {
+                manageRessources {
                     connection = getConnection().autoClose()
                     statement = connection?.prepareStatement().autoClose()
                     rs = statement?.executeQuery().autoClose()
@@ -343,7 +343,7 @@ class UsingTest {
 
         assertThrows(AnotherSecretException::class.java) {
             try {
-                using {
+                manageRessources {
                     connection = getConnection().autoClose()
                     statement = connection?.prepareStatement().autoClose()
                     rs = statement?.executeQuery().autoClose()
@@ -372,7 +372,7 @@ class UsingTest {
 
         assertThrows(AnotherSecretException::class.java) {
             try {
-                using {
+                manageRessources {
                     connection = getConnection().autoClose()
                     statement = connection?.prepareStatement().autoClose()
                     rs = statement?.executeQuery().autoClose()
@@ -401,7 +401,7 @@ class UsingTest {
 
         assertThrows(AnotherSecretException::class.java) {
             try {
-                using {
+                manageRessources {
                     connection = getConnection().autoClose()
                     statement = connection?.prepareStatement().autoClose()
                     rs = statement?.executeQuery().autoClose()
@@ -428,7 +428,7 @@ class UsingTest {
 
         assertThrows(AnotherSecretException::class.java) {
             try {
-                using {
+                manageRessources {
                     connection = getConnection().autoClose()
                     statement = connection?.prepareStatement().autoClose()
                     rs = statement?.executeQuery().autoClose()
@@ -456,7 +456,7 @@ class UsingTest {
 
         var b = false
         try {
-            using {
+            manageRessources {
                 connection = getConnection().autoClose()
                 statement = connection?.prepareStatement().autoClose()
                 rs = statement?.executeQuery().autoClose()
@@ -479,7 +479,7 @@ class UsingTest {
     fun testExceptionInClose() {
         assertThrows(SuperSecretException::class.java) {
             try {
-                using {
+                manageRessources {
                     CloseWithException().autoClose()
                 }
             } finally {
@@ -491,7 +491,7 @@ class UsingTest {
     @DisplayName("Caught exception in close() test")
     fun testExceptionInCloseCaught() {
         try {
-            using {
+            manageRessources {
                 CloseWithException().autoClose()
             }
         } catch (_: SuperSecretException) {

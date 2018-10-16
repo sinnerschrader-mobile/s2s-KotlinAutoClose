@@ -7,7 +7,7 @@ While it is a clean room implementation, project structure, UnitTest and even th
 
 Thanks Kyle!
 
-`using {}`
+`manageRessources {}`
 ----------
 
 Kotlin has no answer to Java's try-with-resources mechanic. This is sad as it's probably the only thing Java has that Kotlin doesn't.
@@ -27,7 +27,7 @@ s2s-KotlinAutoClose was developed without knowledge of Kyle's project. But after
 I realized, that my solution is a lot more standard and less complex.
 It uses Kotlin's regular try/catch mechanisms and therefore does not require a final `finally` (see kotlin-utils [readme.md](https://github.com/DemonWav/kotlin-utils/blob/master/readme.md))
 
-On the other hand it does not solve issue #3. You still need a separate try/catch around your using block if you want to handle exceptions!
+On the other hand it does not solve issue #3. You still need a separate try/catch around your manageRessources block if you want to handle exceptions!
 
 It basically follows closely Orangy's [suggestion](https://discuss.kotlinlang.org/t/kotlin-needs-try-with-resources/214/2).
 
@@ -37,7 +37,7 @@ Here's an example usage of autoClose.
 class Example {
     fun example() {
         try {
-            using {
+            manageRessources {
                 val connection = DriverManager.getConnection("MyDriver").autoClose()
                 val statement = connection.prepareStatement("SELECT ?").autoClose()
                 // This means you can add resources to the manager at any time, which is a bonus
@@ -48,9 +48,9 @@ class Example {
             }
         } catch (e: IOException) {
             // This does support multiple catch blocks
-            println("IO error" + e)
+            LOGGER.error("IO error", e)
         } catch (e: SQLException) {
-            println("Error in query" + e)
+            LOGGER.error("Error in query", e)
         } finally {
             // Not required
         }
@@ -93,11 +93,9 @@ public final class Example {
 
             manager$iv.close();
          } catch (IOException var22) {
-            var2 = "IO error" + var22;
-            System.out.println(var2);
+            LOGGER.error("IO error", var22);
          } catch (SQLException var23) {
-            var2 = "Error in query" + var23;
-            System.out.println(var2);
+            LOGGER.error("Error in query", var23);
          }
 
       } finally {
@@ -162,7 +160,7 @@ public class Example {
         } catch (IOException e) {
             LOGGER.error("IO error", e);
         } catch (SQLException e) {
-            LOGGER.error("Error in query");
+            LOGGER.error("Error in query", e);
         }
     }
 }

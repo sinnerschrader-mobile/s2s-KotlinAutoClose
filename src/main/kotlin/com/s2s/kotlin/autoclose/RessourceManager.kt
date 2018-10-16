@@ -40,9 +40,9 @@ class RessourceManager {
 
     fun close() {
         var throwable: Throwable? = null
-        closeables.asReversed().forEach {
+        closeables.asReversed().forEach { closeable ->
             try {
-                it.close()
+                closeable.close()
             } catch (newThrowable: Throwable) {
                 throwable = throwable?.also { it.addSuppressed(newThrowable) } ?: newThrowable
             }
@@ -51,7 +51,7 @@ class RessourceManager {
     }
 }
 
-inline fun <R> using(block: RessourceManager.() -> R): R {
+inline fun <R> manageRessources(block: RessourceManager.() -> R): R {
     val manager = RessourceManager()
     var closed = false
 
